@@ -1,0 +1,352 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>TechnoPlus Shop</title>
+  <meta name="description" content="TechnoPlus — stylish t-shirts & merch">
+  <style>
+    :root{--bg:#071526;--card:#071a2a;--muted:#94a3b8;--accent:#00aaff;--accent-2:#7b61ff}
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,Arial;background:linear-gradient(180deg,var(--bg),#03101a);color:#e6eef6}
+    .wrap{max-width:1150px;margin:28px auto;padding:20px}
+    header{display:flex;align-items:center;justify-content:space-between;padding:18px;border-radius:12px;background:linear-gradient(180deg,rgba(255,255,255,0.01),transparent)}
+    .brand{display:flex;gap:14px;align-items:center}
+    .logo{width:56px;height:56px;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent-2));display:flex;align-items:center;justify-content:center;font-weight:800;color:#021426;font-size:18px;box-shadow:0 6px 30px rgba(11,40,60,0.6)}
+    .brand h1{margin:0;font-size:20px}
+    .brand .subtitle{color:var(--muted);font-size:13px}
+    .controls{display:flex;gap:12px;align-items:center}
+    .search{padding:9px 12px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);background:transparent;color:inherit;min-width:220px}
+    .btn{padding:8px 12px;border-radius:10px;background:var(--accent);color:#04202b;border:none;font-weight:700;cursor:pointer}
+    .cart-button{position:relative}
+    .badge{position:absolute;top:-8px;right:-8px;background:#ff3366;color:white;padding:6px 9px;border-radius:999px;font-size:12px}
+    main{margin-top:18px}
+    h2{margin:12px 0}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:18px}
+    .card{background:linear-gradient(180deg,rgba(255,255,255,0.01), rgba(255,255,255,0.00));border-radius:12px;padding:14px;border:1px solid rgba(255,255,255,0.03);box-shadow:0 6px 20px rgba(2,6,23,0.5)}
+    .card img{width:100%;height:220px;object-fit:cover;border-radius:10px}
+    .card h3{margin:10px 0 6px;font-size:16px}
+    .muted{color:var(--muted);font-size:13px}
+
+    /* cart panel */
+    .panel{position:fixed;right:20px;top:84px;width:380px;max-width:94vw;background:#0b1625;border-radius:12px;padding:14px;border:1px solid rgba(255,255,255,0.08);box-shadow:0 20px 60px rgba(0,0,0,0.65);z-index:1000;transform:translateX(120%);transition:transform .34s cubic-bezier(.2,.9,.2,1);display:block;opacity:1}
+    .panel.open{ transform:translateX(0); right:20px; }
+    .panel .close-x{ position:absolute; top:10px; right:10px; background:transparent; border:none; color:var(--muted); font-size:20px; cursor:pointer; padding:6px; border-radius:6px }
+    .panel .close-x:hover{ color:#fff; background:rgba(255,255,255,0.03) }
+
+    /* overlay */
+    .overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);backdrop-filter:blur(3px);z-index:900;opacity:0;pointer-events:none;transition:opacity .24s}
+    .overlay.show{opacity:1;pointer-events:auto}
+
+    .cart-item{display:flex;gap:10px;align-items:center;padding:8px 0;border-top:1px solid rgba(255,255,255,0.02)}
+    .cart-item img{width:56px;height:56px;object-fit:cover;border-radius:8px}
+    .linkish{background:none;border:none;color:var(--accent);cursor:pointer}
+
+    /* Checkout modal */
+    .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.55);display:flex;align-items:center;justify-content:center;z-index:999}
+    .modal{width:860px;max-width:96vw;background:#071526;padding:18px;border-radius:12px}
+
+    /* mobile tweaks */
+    @media (max-width:760px){
+      .grid{grid-template-columns:repeat(auto-fill,minmax(160px,1fr));}
+      .panel{left:0;right:0;bottom:0;top:auto;width:100%;max-width:100%;border-radius:12px 12px 0 0;height:60vh;transform:translateY(120%);} 
+      .panel.open{ transform:translateY(0); }
+    }
+
+    @media (max-width:420px){
+      .grid{grid-template-columns:1fr}
+      .card img{height:220px}
+      .logo{width:48px;height:48px}
+      .brand h1{font-size:18px}
+    }
+
+    footer{margin-top:60px;color:var(--muted);font-size:13px}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="brand">
+        <div class="logo">TP</div>
+        <div>
+          <h1>TechnoPlus Shop</h1>
+          <div class="subtitle">Official merch & tees</div>
+        </div>
+      </div>
+      <div class="controls">
+        <input id="search" class="search" placeholder="Search products..." aria-label="Search products">
+        <button id="openCartBtn" class="btn cart-button" type="button">Cart <span id="cartCount" class="badge">0</span></button>
+      </div>
+    </header>
+
+    <main>
+      <h2>Featured Products</h2>
+      <div id="productsGrid" class="grid"></div>
+    </main>
+
+    <div id="cartPanel" class="panel" aria-hidden="true">
+      <button id="closeCartBtn" class="close-x" aria-label="Close cart">✕</button>
+      <h3>Your Cart</h3>
+      <div id="cartItems"></div>
+      <div style="border-top:1px solid rgba(255,255,255,0.02);padding-top:12px;margin-top:12px;display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div class="muted">Subtotal</div>
+          <div id="cartSubtotal" style="font-weight:700;font-size:18px">$0.00</div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button id="clearCart" class="linkish" type="button">Clear</button>
+          <button id="checkoutBtn" class="btn" type="button">Checkout</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="overlay" class="overlay" aria-hidden="true"></div>
+    <div id="modalRoot" style="display:none"></div>
+
+    <footer>© TechnoPlus — Built with ❤️</footer>
+  </div>
+
+  <script>
+// ============================
+// PRODUCT DATA (your 4 shirts)
+// ============================
+const products = [
+  {
+    id: 'tp-001',
+    title: 'TP Classic Tee - Yellow',
+    price: 12.99,
+    image: 'https://i.ibb.co/PGvQRQRJ/promotional-t-shirt-38.jpg'
+  },
+  {
+    id: 'tp-002',
+    title: 'TP Dri-Fit Tee - Pink/Purple',
+    price: 14.99,
+    image: 'https://i.ibb.co/jZQbQ06X/Dri-fit-T-Shirt.jpg'
+  },
+  {
+    id: 'tp-003',
+    title: 'TP Classic Tee - Green',
+    price: 16.99,
+    image: 'https://i.ibb.co/mFzrpZzc/AS-Colour-Classic-Tee-Print-Brand-Me.jpg'
+  },
+  {
+    id: 'tp-004',
+    title: 'TP Classic Tee - Black',
+    price: 18.99,
+    image: 'https://i.ibb.co/kVrpFwW9/5125001-4204-577-880.jpg'
+  }
+];
+
+// ============================
+// CART SYSTEM
+// ============================
+const CART_KEY = 'tp_cart_v1';
+
+function loadCart() {
+  try { return JSON.parse(localStorage.getItem(CART_KEY)) || {}; }
+  catch (e) { return {}; }
+}
+
+function saveCart(cart) {
+  localStorage.setItem(CART_KEY, JSON.stringify(cart));
+}
+
+function formatPrice(n) {
+  return '$' + n.toFixed(2);
+}
+
+// ============================
+// RENDER PRODUCTS
+// ============================
+const productsGrid = document.getElementById('productsGrid');
+
+function renderProducts(list) {
+  productsGrid.innerHTML = '';
+  list.forEach(p => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `
+      <img src="${p.image}" loading="lazy" alt="${p.title}">
+      <h3>${p.title}</h3>
+      <div class="muted">ID: ${p.id}</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px">
+        <div style="font-weight:700">${formatPrice(p.price)}</div>
+        <button class="btn addBtn" data-id="${p.id}">Add</button>
+      </div>
+    `;
+    productsGrid.appendChild(card);
+  });
+}
+renderProducts(products);
+
+// ============================
+// SEARCH FUNCTION
+// ============================
+document.getElementById('search').addEventListener('input', e => {
+  const q = e.target.value.toLowerCase().trim();
+  if (!q) return renderProducts(products);
+  renderProducts(products.filter(p =>
+    p.title.toLowerCase().includes(q) ||
+    p.id.toLowerCase().includes(q)
+  ));
+});
+
+// ============================
+// CART LOGIC
+// ============================
+function addToCart(id, qty = 1) {
+  const cart = loadCart();
+  cart[id] = (cart[id] || 0) + qty;
+  saveCart(cart);
+  renderCart();
+  flashCart();
+}
+
+function removeFromCart(id) {
+  const cart = loadCart();
+  delete cart[id];
+  saveCart(cart);
+  renderCart();
+}
+
+function updateQty(id, qty) {
+  const cart = loadCart();
+  if (qty <= 0) delete cart[id];
+  else cart[id] = qty;
+  saveCart(cart);
+  renderCart();
+}
+
+function clearCart() {
+  localStorage.removeItem(CART_KEY);
+  renderCart();
+}
+
+// ============================
+// RENDER CART PANEL
+// ============================
+const cartPanel = document.getElementById('cartPanel');
+const cartCount = document.getElementById('cartCount');
+const overlay = document.getElementById('overlay');
+
+function getProductById(id) {
+  return products.find(p => p.id === id);
+}
+
+function renderCart() {
+  const cart = loadCart();
+  const itemsWrap = document.getElementById('cartItems');
+  itemsWrap.innerHTML = '';
+
+  let subtotal = 0;
+  let totalCount = 0;
+
+  for (const id in cart) {
+    const qty = cart[id];
+    const p = getProductById(id);
+    if (!p) continue;
+
+    subtotal += p.price * qty;
+    totalCount += qty;
+
+    const item = document.createElement('div');
+    item.className = 'cart-item';
+    item.innerHTML = `
+      <img src="${p.image}" alt="${p.title}">
+      <div style="flex:1">
+        <div style="display:flex;justify-content:space-between">
+          <strong>${p.title}</strong>
+          <span class="muted">${formatPrice(p.price)}</span>
+        </div>
+        <div style="margin-top:8px; display:flex; justify-content:space-between; align-items:center">
+          <div class="qty" style="display:flex; gap:6px; align-items:center">
+            <button class="linkish decr" data-id="${id}">-</button>
+            <div style="min-width:28px;text-align:center">${qty}</div>
+            <button class="linkish incr" data-id="${id}">+</button>
+          </div>
+          <button class="linkish remove" data-id="${id}">Remove</button>
+        </div>
+      </div>
+    `;
+    itemsWrap.appendChild(item);
+  }
+
+  document.getElementById('cartSubtotal').innerText = formatPrice(subtotal);
+  cartCount.innerText = totalCount;
+
+  if (totalCount === 0) {
+    cartPanel.classList.remove('open');
+    overlay.classList.remove('show');
+  }
+}
+renderCart();
+
+// ============================
+// OPEN / CLOSE CART
+// ============================
+document.getElementById('openCartBtn').addEventListener('click', () => {
+  cartPanel.classList.add('open');
+  overlay.classList.add('show');
+});
+
+document.getElementById('closeCartBtn').addEventListener('click', () => {
+  cartPanel.classList.remove('open');
+  overlay.classList.remove('show');
+});
+
+// Close on overlay click
+overlay.addEventListener('click', () => {
+  cartPanel.classList.remove('open');
+  overlay.classList.remove('show');
+});
+
+// ============================
+// CART BUTTON EVENTS
+// ============================
+document.body.addEventListener('click', e => {
+  if (e.target.classList.contains('addBtn')) {
+    addToCart(e.target.dataset.id);
+  }
+
+  if (e.target.classList.contains('remove')) {
+    removeFromCart(e.target.dataset.id);
+  }
+
+  if (e.target.classList.contains('incr')) {
+    const id = e.target.dataset.id;
+    const cart = loadCart();
+    updateQty(id, (cart[id] || 0) + 1);
+  }
+
+  if (e.target.classList.contains('decr')) {
+    const id = e.target.dataset.id;
+    const cart = loadCart();
+    updateQty(id, (cart[id] || 0) - 1);
+  }
+});
+
+// ============================
+// FLASH CART ICON
+// ============================
+function flashCart() {
+  const el = cartCount;
+  el.animate(
+    [{ transform: 'scale(1.2)' }, { transform: 'scale(1)' }],
+    { duration: 220 }
+  );
+}
+
+// ============================
+// CHECKOUT
+// ============================
+document.getElementById('checkoutBtn').addEventListener('click', () => {
+  const cart = loadCart();
+  if (Object.keys(cart).length === 0) {
+    alert('Your cart is empty');
+    return;
+  }
+  alert('Checkout coming soon!');
+});
+
+</script>
+
