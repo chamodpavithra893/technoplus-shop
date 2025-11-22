@@ -12,6 +12,7 @@
             height: 100%;
             overflow: hidden;
             font-family: Arial, sans-serif;
+            background: #000; /* fallback if video fails */
         }
 
         /* Background Video */
@@ -22,7 +23,7 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
-            z-index: -1; /* video stays behind */
+            z-index: -1;
         }
 
         /* Overlay content */
@@ -38,6 +39,7 @@
             font-size: 50px;
             font-weight: bold;
             margin-bottom: 20px;
+            text-shadow: 0px 0px 10px black;
         }
 
         nav a {
@@ -46,21 +48,28 @@
             margin: 0 20px;
             font-size: 22px;
             font-weight: bold;
+            text-shadow: 0px 0px 10px black;
         }
 
         .about-section {
             margin-top: 200px;
             font-size: 24px;
             color: white;
+            padding: 20px;
+            background: rgba(0,0,0,0.4);
+            border-radius: 10px;
+            width: 80%;
+            margin-left: auto;
+            margin-right: auto;
         }
     </style>
 </head>
 <body>
 
     <!-- Background Video -->
-    <video autoplay loop muted id="bg-video">
-        <source src="5319754-uhd_2160_3840_25fps.mp4" type="video/mp4">
-        <!-- Put your own video file name instead of video.mp4 -->
+    <video autoplay loop muted playsinline id="bg-video">
+        <source src="videos/gym-bg.mp4" type="video/mp4">
+        Your browser does not support the video tag.
     </video>
 
     <!-- Overlay Content -->
@@ -68,22 +77,22 @@
         <h1>Strong Wave Fitness</h1>
 
         <nav>
-           
-            <a href="equipment.html" class="Home">Home</a> 
+            <a href="equipment.html">Home</a> 
             <a href="new-page.html">About</a>
             <a href="new-page.html">Information</a>
         </nav>
 
         <div class="about-section" id="about">
-            <!-- You can edit this text later -->
-            <p>Strong Wave Fitness is a growing fitness brand dedicated
- to providing affordable and high-quality products for students, hostel
- residents, and home gym users. We create durable handmade wooden gym 
-equipment, everyday fitness accessories, and custom-designed fitness 
-T-shirts that bring both style and motivation to your workouts.
-Our goal is simple: make fitness accessible and enjoyable for everyone.
- With creativity, strength, and passion behind every product, Strong Wave
- Fitness supports your journey to becoming stronger—anytime, anywhere..</p>
+            <p>
+                Strong Wave Fitness is a growing fitness brand dedicated
+                to providing affordable and high-quality products for students,
+                hostel residents, and home gym users. We create durable handmade
+                wooden gym equipment, everyday fitness accessories, and custom-designed
+                fitness T-shirts that bring both style and motivation to your workouts.
+                Our goal is simple: make fitness accessible and enjoyable for everyone.
+                With creativity, strength, and passion behind every product,
+                Strong Wave Fitness supports your journey to becoming stronger—anytime, anywhere.
+            </p>
         </div>
     </div>
 
